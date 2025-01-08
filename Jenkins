@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+    environment {
+        DOCKER_USERNAME = credentials('jna123')
+        DOCKER_PASSWORD = credentials('docker-hub-password')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/jna-123/docker-Simple-Project.git', branch: 'main'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh './mvnw clean package'
+            }
+        }
+        stage('Docker Build') {
+            steps {
+                sh 'docker build -t $jna123/${JOB_NAME}:latest .'
+            }
+        }
+        stage('Docker Push') {
+            steps {
+                sh 'echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin'
+                sh 'docker push ${DOCKER_USERNAME}/$docker-Simple-Project:latest'
+            }
+        }
+    }
+}
